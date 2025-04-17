@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Doações - ABEFRA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="theme-toggle">
+        <i class="bx bx-sun"></i>
+    </button>
+
+    <div class="container">
+        <h1 class="header">
+            Sistema de Doações <span>ABEFRA</span>
+        </h1>
+
+        <div class="form-container">
+            <form id="formDoacao">
+                <input type="text" id="nomeItem" placeholder="Nome do Item" required>
+                <input type="text" id="doador" placeholder="Nome do Doador">
+                <input type="number" id="quantidade" placeholder="Quantidade" required>
+                <input type="date" id="dataRecebimento" required>
+                <input type="date" id="dataValidade" class="campo-validade" required>
+                <select id="categoria">
+                    <option value="alimentos">Alimentos</option>
+                    <option value="roupas">Roupas</option>
+                    <option value="roupas">Brinquedos</option>
+                    <option value="roupas">Material Escolar</option>
+                    <option value="outros">Outros</option>
+                    
+                </select>
+                <button type="submit">Cadastrar Doação</button>
+            </form>
+        </div>
+
+        <div class="alert-box" id="alertBox">
+            <h3>⚠️ Há Alertas de Validade Próxima</h3>
+            <div id="alertContent"></div>
+        </div>
+
+        <div class="lista-itens">
+            <h2 class="subtitulo">Itens Cadastrados</h2>
+            <table id="tabelaItens">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Doador</th>
+                        <th>Quantidade</th>
+                        <th>Recebimento</th>
+                        <th>Validade</th>
+                        <th>Categoria</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
