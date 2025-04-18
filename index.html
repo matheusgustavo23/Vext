@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Doações - ABEFRA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <button class="theme-toggle">
@@ -17,27 +18,76 @@
             Sistema de Doações <span>ABEFRA</span>
         </h1>
 
+        <div class="main-dashboard">
+            <div class="cards-grid">
+                <div class="dashboard-card destaque" id="cardTotal">
+                    <div class="icon"><i class='bx bx-package'></i></div>
+                    <h3>Total de Itens</h3>
+                    <span id="totalItens">0</span>
+                </div>
+        
+                <div class="dashboard-card destaque" id="cardAlimentos">
+                    <i class='bx bx-bowl-rice food-icon'></i>
+                    <h3>Alimentos</h3>
+                    <span id="totalAlimentos">0</span>
+                </div>
+        
+                <div class="dashboard-card destaque" id="cardRoupas">
+                    <div class="icon"><i class='bx bxs-t-shirt'></i></div>
+                    <h3>Roupas</h3>
+                    <span id="totalRoupas">0</span>
+                </div>
+        
+                <div class="dashboard-card destaque" id="cardProximos">
+                    <div class="icon"><i class='bx bx-time'></i></div>
+                    <h3>Próximos do Vencimento</h3>
+                    <span id="proximosVencer">0</span>
+                </div>
+            </div>
+        
+            <div class="grafico-wrapper">
+                <div class="grafico-container">
+                    <canvas id="graficoCategorias"></canvas>
+                </div>
+            </div>
+        </div>
+
         <div class="form-container">
             <form id="formDoacao">
                 <input type="text" id="nomeItem" placeholder="Nome do Item" required>
                 <input type="text" id="doador" placeholder="Nome do Doador">
                 <input type="number" id="quantidade" placeholder="Quantidade" required>
-                <input type="date" id="dataRecebimento" required>
-                <input type="date" id="dataValidade" class="campo-validade" required>
+                
+                <!-- Campos de data modificados -->
+                <input 
+                    type="text" 
+                    id="dataRecebimento" 
+                    placeholder="DD/MM/AAAA" 
+                    pattern="\d{2}/\d{2}/\d{4}" 
+                    required
+                >
+                
+                <input 
+                    type="text" 
+                    id="dataValidade" 
+                    class="hidden campo-validade" 
+                    placeholder="DD/MM/AAAA" 
+                    pattern="\d{2}/\d{2}/\d{4}"
+                >
+                
                 <select id="categoria">
                     <option value="alimentos">Alimentos</option>
                     <option value="roupas">Roupas</option>
-                    <option value="roupas">Brinquedos</option>
-                    <option value="roupas">Material Escolar</option>
+                    <option value="brinquedos">Brinquedos</option>
+                    <option value="Material Escolar">Material Escolar</option>
                     <option value="outros">Outros</option>
-                    
                 </select>
                 <button type="submit">Cadastrar Doação</button>
             </form>
         </div>
 
         <div class="alert-box" id="alertBox">
-            <h3>⚠️ Há Alertas de Validade Próxima</h3>
+            <h3>🚨 Há Alertas de Validade Próxima</h3>
             <div id="alertContent"></div>
         </div>
 
@@ -53,6 +103,7 @@
                         <th>Validade</th>
                         <th>Categoria</th>
                         <th>Status</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="corpoTabela"></tbody>
