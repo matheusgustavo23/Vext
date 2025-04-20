@@ -43,7 +43,7 @@ function toggleValidade() {
     }
 }
 
-document.getElementById('formDoacao').addEventListener('submit', function(e) {
+document.getElementById('formDoacao').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const categoria = document.getElementById('categoria').value;
@@ -91,62 +91,69 @@ document.getElementById('formDoacao').addEventListener('submit', function(e) {
     }
 
     const item = {
-        id: Date.now(),
-        nome: document.getElementById('nomeItem').value,
+        nome_item: document.getElementById('nomeItem').value,
         doador: document.getElementById('doador').value,
         quantidade: document.getElementById('quantidade').value,
-        dataRecebimento: dataRecebimentoISO,
-        dataValidade: categoria === 'alimentos' ? dataValidadeISO : null,
+        data_recebimento: dataRecebimentoISO,
+        data_validade: categoria === 'alimentos' ? dataValidadeISO : null,
         categoria: categoria
     };
 
-    const itens = JSON.parse(localStorage.getItem('doacoes')) || [];
-    itens.push(item);
-    localStorage.setItem('doacoes', JSON.stringify(itens));
-
-    atualizarTabela(itens);
-    verificarAlertas(itens);
-    atualizarDashboard(itens);
-    this.reset();
-    toggleValidade();
+    try {
+        await fetch('http://localhost:3001/doacoes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+        });
+        carregarDados();
+        this.reset();
+        toggleValidade();
+    } catch (error) {
+        console.error('Erro ao salvar:', error);
+    }
 });
 
-function carregarDados() {
-    const itens = JSON.parse(localStorage.getItem('doacoes')) || [];
-    atualizarTabela(itens);
-    verificarAlertas(itens);
-    atualizarDashboard(itens);
+async function carregarDados() {
+    try {
+        const response = await fetch('http://localhost:3001/doacoes');
+        const itens = await response.json();
+        atualizarTabela(itens);
+        verificarAlertas(itens);
+        atualizarDashboard(itens);
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+    }
 }
 
 function atualizarTabela(itens) {
     const corpoTabela = document.getElementById('corpoTabela');
     corpoTabela.innerHTML = '';
-    
-    itens.forEach((item, index) => {
+
+    itens.forEach((item) => {
         const tr = document.createElement('tr');
-        const diasRestantes = item.dataValidade ? calcularDiasRestantes(item.dataValidade) : null;
-        
+        const diasRestantes = item.data_validade ? calcularDiasRestantes(item.data_validade) : null;
+
         tr.innerHTML = `
-            <!-- ... (células existentes mantidas) -->
             <td>
-                <button class="btn-excluir" onclick="excluirItem(${index})">
+                <button class="btn-excluir" onclick="excluirItem(${item.id})">
                     <i class='bx bx-trash'></i>
                 </button>
             </td>
-            <td>${item.nome}</td>
+            <td>${item.nome_item}</td>
             <td>${item.doador || 'Não informado'}</td>
             <td>${item.quantidade}</td>
-            <td>${formatarData(item.dataRecebimento)}</td>
-            <td>${item.dataValidade ? formatarData(item.dataValidade) : 'N/A'}</td>
+            <td>${formatarData(item.data_recebimento)}</td>
+            <td>${item.data_validade ? formatarData(item.data_validade) : 'N/A'}</td>
             <td>${item.categoria}</td>
             <td class="${item.categoria === 'alimentos' && (diasRestantes <= 7 || diasRestantes <= 0) ? 'status-alerta' : ''}">
-    ${item.categoria === 'alimentos' 
-        ? (diasRestantes <= 0 
-            ? `Vencido há ${Math.abs(diasRestantes)} dias` 
-            : `${diasRestantes} dias restantes`)
-        : 'N/A'}
-</td>
+                ${item.categoria === 'alimentos' 
+                    ? (diasRestantes <= 0 
+                        ? `Vencido há ${Math.abs(diasRestantes)} dias` 
+                        : `${diasRestantes} dias restantes`)
+                    : 'N/A'}
+            </td>
         `;
+
         corpoTabela.appendChild(tr);
     });
 }
@@ -204,14 +211,14 @@ function renderizarGrafico(itens) {
                 label: 'Doações por Categoria',
                 data: Object.values(contagem),
                 backgroundColor: [
-                    '#ec3535',
+                    '#339072',
                     '#0984e3',
                     '#fdcb6e',
-                    '#00b894',
+                    '#91e9cd',
                     '#6c5ce7'
                 ],
                 borderColor: 'transparent',
-                hoverOffset: 10
+                hoverOffset: 3
             }]
         },
         options: {
@@ -313,15 +320,13 @@ function animarNumero(id, valorFinal) {
     }, 30);
 }
 
-function excluirItem(index) {
+async function excluirItem(id) {
     if (confirm('Tem certeza que deseja excluir este item?')) {
-        const itens = JSON.parse(localStorage.getItem('doacoes')) || [];
-        itens.splice(index, 1); // Remove o item do array
-        localStorage.setItem('doacoes', JSON.stringify(itens));
-        
-        // Atualiza todas as visualizações
-        atualizarTabela(itens);
-        verificarAlertas(itens);
-        atualizarDashboard(itens);
+        try {
+            await fetch(`http://localhost:3001/doacoes/${id}`, { method: 'DELETE' });
+            carregarDados();
+        } catch (error) {
+            console.error('Erro ao excluir:', error);
+        }
     }
 }
