@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Entrar</h1>
+        <div class="login-error" id="loginError"></div>
+
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="E-mail" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+
+        <div class="social-divider">
+            <span>ou continue com</span>
+        </div>
+
+        <div class="social-login">
+            <button id="googleLogin">
+                <i class='bx bxl-google'></i> Entrar com Google
+            </button>
+            <button id="facebookLogin">
+                <i class='bx bxl-facebook'></i> Entrar com Facebook
+            </button>
+        </div>
+
+        <!-- link para registro -->
+        <div class="login-links">
+            <p>Não tem uma conta? <a href="registro.html" class="login-register-link">Crie uma aqui!</a></p>
+            <p><a href="recuperarsenha.html" class="login-forgot-password">Esqueceu sua senha?</a></p>
+        </div>
+    </div>
+
+    <script src="scriptlogin.js"></script>
+</body>
+</html>

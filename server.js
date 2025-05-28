@@ -4,32 +4,57 @@ const { Sequelize, DataTypes } = require('sequelize');
 const app = express();
 const port = 3001;
 
-// Configuração do CORS
 app.use(cors());
 app.use(express.json());
 
-// Conexão com o MySQL
 const sequelize = new Sequelize(
     'abefra_doacoes',
-    'app_abefra', // Usuário correto
-    'SuaSenhaSeguraAqui123@', // Senha definida
+    'app_abefra', 
+    'SuaSenhaSeguraAqui123@', 
     { host: 'localhost', dialect: 'mysql' }
 );
 
-// Modelo da tabela
 const Doacao = sequelize.define('Doacao', {
-    nome_item: DataTypes.STRING,
-    doador: DataTypes.STRING,
-    quantidade: DataTypes.INTEGER,
-    data_recebimento: DataTypes.DATEONLY,
+    nome_item: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    doador: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    quantidade: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+            min: 1
+        }
+    },
+    data_recebimento: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
     data_validade: DataTypes.DATEONLY,
-    categoria: DataTypes.ENUM('alimentos', 'roupas', 'brinquedos', 'Material Escolar', 'outros')
+    categoria: {
+        type: DataTypes.ENUM('alimentos', 'roupas', 'brinquedos', 'material escolar', 'outros'),
+        allowNull: false
+    },
+    tipo_documento: {
+        type: DataTypes.ENUM('CPF', 'CNPJ'),
+        allowNull: false
+    },
+    documento: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            is: /^\d{3}\.\d{3}\.\d{3}-\d{2}$|^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/
+        }
+    }
 }, {
-    tableName: 'doacoes', // Nome exato da tabela no MySQL
-    timestamps: false // Remove campos automáticos 'createdAt' e 'updatedAt'
+    tableName: 'doacoes', 
+    timestamps: false 
 });
 
-// Rotas da API
 app.get('/doacoes', async (req, res) => {
     try {
         const doacoes = await Doacao.findAll();
@@ -57,7 +82,6 @@ app.delete('/doacoes/:id', async (req, res) => {
     }
 });
 
-// Iniciar servidor
 sequelize.sync().then(() => {
     app.listen(port, () => {
         console.log(`Servidor rodando em http://localhost:${port}`);

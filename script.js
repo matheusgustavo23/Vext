@@ -41,6 +41,7 @@ function toggleValidade() {
         validadeInput.required = false;
         validadeInput.value = '';
     }
+    document.querySelector('#formDoacao button').style.gridColumn = categoria === 'alimentos' ? '' : '1 / -1'; //forca a linha do cadastrar doacao descer
 }
 
 document.getElementById('formDoacao').addEventListener('submit', async function(e) {
@@ -60,7 +61,6 @@ document.getElementById('formDoacao').addEventListener('submit', async function(
         return /^\d{2}\/\d{2}\/\d{4}$/.test(dataString);
     };
 
-    // Validação das entradas
     if (!validarFormatoData(dataRecebimentoInput.value)) {
         alert('Formato de data inválido! Use DD/MM/AAAA');
         return;
@@ -74,7 +74,6 @@ document.getElementById('formDoacao').addEventListener('submit', async function(
     const dataRecebimentoISO = converterParaISO(dataRecebimentoInput.value);
     const dataValidadeISO = converterParaISO(dataValidadeInput.value);
 
-    // 4. Validação de datas reais
     const validarDataReal = (dataISO) => {
         const date = new Date(dataISO);
         return !isNaN(date.getTime());
@@ -91,13 +90,15 @@ document.getElementById('formDoacao').addEventListener('submit', async function(
     }
 
     const item = {
-        nome_item: document.getElementById('nomeItem').value,
-        doador: document.getElementById('doador').value,
-        quantidade: document.getElementById('quantidade').value,
-        data_recebimento: dataRecebimentoISO,
-        data_validade: categoria === 'alimentos' ? dataValidadeISO : null,
-        categoria: categoria
-    };
+    nome_item: document.getElementById('nomeItem').value,
+    doador: document.getElementById('doador').value,
+    quantidade: parseInt(document.getElementById('quantidade').value),
+    data_recebimento: dataRecebimentoISO,
+    data_validade: categoria === 'alimentos' ? dataValidadeISO : null,
+    categoria: categoria.toLowerCase(), // Garante lowercase
+    tipo_documento: document.getElementById('tipoDocumento').value,
+    documento: document.getElementById('documento').value
+};
 
     try {
         await fetch('http://localhost:3001/doacoes', {
@@ -131,28 +132,34 @@ function atualizarTabela(itens) {
 
     itens.forEach((item) => {
         const tr = document.createElement('tr');
-        const diasRestantes = item.data_validade ? calcularDiasRestantes(item.data_validade) : null;
+        const diasRestantes = item.data_validade ? calcularDiasRestantes(item.data_validade) : Infinity;
 
         tr.innerHTML = `
-            <td>
-                <button class="btn-excluir" onclick="excluirItem(${item.id})">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </td>
-            <td>${item.nome_item}</td>
-            <td>${item.doador || 'Não informado'}</td>
-            <td>${item.quantidade}</td>
-            <td>${formatarData(item.data_recebimento)}</td>
-            <td>${item.data_validade ? formatarData(item.data_validade) : 'N/A'}</td>
-            <td>${item.categoria}</td>
-            <td class="${item.categoria === 'alimentos' && (diasRestantes <= 7 || diasRestantes <= 0) ? 'status-alerta' : ''}">
-                ${item.categoria === 'alimentos' 
-                    ? (diasRestantes <= 0 
-                        ? `Vencido há ${Math.abs(diasRestantes)} dias` 
-                        : `${diasRestantes} dias restantes`)
-                    : 'N/A'}
-            </td>
-        `;
+    <td>
+        <button class="btn-excluir" onclick="excluirItem(${item.id})">
+            <i class='bx bx-trash'></i>
+        </button>
+    </td>
+    <td>${item.nome_item}</td>
+    <td>${item.doador}</td>
+    <td>${item.quantidade}</td>
+    <td>${formatarData(item.data_recebimento)}</td>
+    <td>${item.data_validade ? formatarData(item.data_validade) : 'N/A'}</td>
+    <td>${item.categoria}</td>
+    <td>${item.tipo_documento}</td>
+    <td class="documento">${item.documento}</td>
+    <td class="${item.categoria === 'alimentos' && diasRestantes !== null && (diasRestantes <= 7 || diasRestantes < 0) ? 'status-alerta' : ''}">
+    ${item.categoria === 'alimentos' 
+        ? (diasRestantes === null 
+            ? 'N/A' 
+            : (diasRestantes < 0 
+                ? `Vencido há ${Math.abs(diasRestantes)} dia${Math.abs(diasRestantes) !== 1 ? 's' : ''}` 
+                : (diasRestantes === 0 
+                    ? 'Vence hoje!' 
+                    : `${diasRestantes} dia${diasRestantes !== 1 ? 's' : ''} restante${diasRestantes !== 1 ? 's' : ''}`)))
+        : 'N/A'}
+</td>
+`;
 
         corpoTabela.appendChild(tr);
     });
@@ -163,16 +170,25 @@ function atualizarDashboard(itens) {
         alimentos: 0,
         roupas: 0,
         brinquedos: 0,
-        'Material Escolar': 0,
+        'material escolar': 0,
         outros: 0
     };
 
     let proximosVencer = 0;
 
     itens.forEach(item => {
-        categorias[item.categoria]++;
-        if(item.categoria === 'alimentos' && item.dataValidade) {
-            const dias = calcularDiasRestantes(item.dataValidade);
+        // Converte a categoria para lowercase para garantir consistência
+        const categoria = item.categoria.toLowerCase();
+        
+        // Verifica se a categoria existe no objeto, caso contrário conta como "outros"
+        if (categorias.hasOwnProperty(categoria)) {
+            categorias[categoria]++;
+        } else {
+            categorias.outros++;
+        }
+
+        if(categoria === 'alimentos' && item.data_validade) {
+            const dias = calcularDiasRestantes(item.data_validade);
             if(dias > 0 && dias <= 7) proximosVencer++;
         }
     });
@@ -186,19 +202,25 @@ function atualizarDashboard(itens) {
 }
 
 function renderizarGrafico(itens) {
-    if (graficoRosca) {
-        graficoRosca.destroy();
-    }
+    if (graficoRosca) graficoRosca.destroy();
 
     const contagem = {
         alimentos: 0,
         roupas: 0,
         brinquedos: 0,
-        'Material Escolar': 0,
+        'material escolar': 0,
         outros: 0
     };
 
-    itens.forEach(item => contagem[item.categoria]++);
+    itens.forEach(item => {
+    const categoria = item.categoria.toLowerCase().trim(); // normaliza a categoria
+    
+    if (contagem.hasOwnProperty(categoria)) {
+        contagem[categoria]++;
+    } else {
+        contagem.outros++;
+    }
+});
 
     const ctx = document.getElementById('graficoCategorias').getContext('2d');
     const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color');
@@ -211,11 +233,11 @@ function renderizarGrafico(itens) {
                 label: 'Doações por Categoria',
                 data: Object.values(contagem),
                 backgroundColor: [
-                    '#339072',
-                    '#0984e3',
-                    '#fdcb6e',
-                    '#91e9cd',
-                    '#6c5ce7'
+                    '#2ecc71',
+                    '#3498db',
+                    '#f1c40f',
+                    '#9b59b6',
+                    '#95a5a6'
                 ],
                 borderColor: 'transparent',
                 hoverOffset: 3
@@ -262,21 +284,33 @@ function renderizarGrafico(itens) {
 }
 
 function calcularDiasRestantes(dataValidade) {
-    if (!dataValidade) return Infinity;
-    const hoje = new Date();
-    const validade = new Date(dataValidade);
+    if (!dataValidade) return null;
     
-    // Ajusta ambas as datas para meia-noite UTC
-    const hojeUTC = Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-    const validadeUTC = Date.UTC(validade.getFullYear(), validade.getMonth(), validade.getDate());
+    // recebe a data atual em UTC (timezone 00:00)
+    const hojeUTC = new Date();
+    hojeUTC.setUTCHours(0, 0, 0, 0);
     
+    // converte a data de validade para objeto date em UTC
+    const validadeUTC = new Date(dataValidade + 'T00:00:00Z');
+    
+    if (isNaN(validadeUTC.getTime())) return null;
+    
+    // calcula a diferença em milissegundos entre as datas UTC
     const diff = validadeUTC - hojeUTC;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    console.log(dataValidade, validadeUTC, hojeUTC);
+
+    // converte ms para dias
+    const dias = diff / 86400000;
+    
+    // agora retornar inteiros
+    if (dias === 0) return 0;       // vence hoje
+    if (dias > 0) return Math.ceil(dias);  // dias futuros (1, 2, ...)
+    return Math.floor(dias);        // dias passados (-1, -2, ...)
 }
 
 function formatarData(dataISO) {
-    // Garante que a data seja tratada como UTC
-    const data = new Date(dataISO + 'T00:00:00Z'); // Força UTC
+
+    const data = new Date(dataISO + 'T00:00:00Z');
     const dia = String(data.getUTCDate()).padStart(2, '0');
     const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
     const ano = data.getUTCFullYear();
@@ -284,30 +318,96 @@ function formatarData(dataISO) {
 }
 
 function verificarAlertas(itens) {
-    const alertas = itens.filter(item => {
-        if (item.categoria !== 'alimentos') return false;
-        const dias = calcularDiasRestantes(item.dataValidade);
-        return dias <= 7;
-    });
-
     const alertBox = document.getElementById('alertBox');
     const alertContent = document.getElementById('alertContent');
     
+    // Limpa alertas anteriores
+    alertContent.innerHTML = '';
+    
+    // Filtra e classifica os alertas
+    const alertas = itens
+        .filter(item => item.categoria === 'alimentos' && item.data_validade)
+        .map(item => ({
+            ...item,
+            dias: calcularDiasRestantes(item.data_validade)
+        }))
+        .filter(item => item.dias !== null && item.dias <= 7)
+        .sort((a, b) => a.dias - b.dias); // Ordena por dias restantes
+    
     if (alertas.length > 0) {
-        alertBox.style.display = 'block';
-        alertContent.innerHTML = alertas.map(item => {
-            const dias = calcularDiasRestantes(item.dataValidade);
-            return `<p>${item.nome} - ${dias > 0 ? `Vence em ${dias} dias` : `Vencido há ${Math.abs(dias)} dias`}</p>`;
-        }).join('');
+        alertas.forEach(item => {
+            const alertItem = document.createElement('div');
+            let statusInfo, classe, icon;
+            
+            if (item.dias < 0) {
+                statusInfo = `Vencido há ${Math.abs(item.dias)} dia${Math.abs(item.dias) !== 1 ? 's' : ''}`;
+                classe = 'alert-item vencido';
+                icon = 'bx-error';
+            } else if (item.dias === 0) {
+                statusInfo = 'Vence hoje!';
+                classe = 'alert-item hoje';
+                icon = 'bx-calendar-exclamation'; // Ícone mais apropriado
+            } else {
+                statusInfo = `Vence em ${item.dias} dia${item.dias !== 1 ? 's' : ''}`;
+                classe = 'alert-item proximo';
+                icon = 'bx-time';
+            }
+            
+            alertItem.className = classe;
+            alertItem.innerHTML = `
+                <i class='bx ${icon}'></i>
+                <span>${item.nome_item} - <strong>${statusInfo}</strong></span>
+            `;
+            alertContent.appendChild(alertItem);
+        });
+        
+        alertBox.classList.add('show');
     } else {
-        alertBox.style.display = 'none';
+        alertBox.classList.remove('show');
     }
+}
+
+function atualizarEstiloAlerta() {
+    const alertBox = document.getElementById('alertBox');
+    if (!alertBox) return;
+    
+    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    
+    alertBox.style.backgroundColor = isDarkMode 
+        ? 'rgba(46, 204, 113, 0.08)'  // Dark blue para tema escuro
+        : 'rgba(46, 204, 113, 0.05)'; // tema claro
+}
+
+function setupAlertHandlers() {
+  const alertBox = document.getElementById('alertBox');
+  const themeToggle = document.querySelector('.theme-toggle');
+  
+  if (!alertBox || !themeToggle) return;
+
+  // Atualiza o estilo do alerta conforme o tema
+  const updateAlertStyle = () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    alertBox.style.backgroundColor = isDark 
+      ? 'rgb(70, 70, 70)' 
+      : 'rgba(246, 249, 252, 0.98)';
+  };
+
+  // Configura os listeners
+  themeToggle.addEventListener('click', updateAlertStyle);
+  document.addEventListener('DOMContentLoaded', updateAlertStyle);
+}
+
+// Chama a função quando o DOM estiver pronto
+if (document.readyState === 'complete') {
+  setupAlertHandlers();
+} else {
+  document.addEventListener('DOMContentLoaded', setupAlertHandlers);
 }
 
 function animarNumero(id, valorFinal) {
     const elemento = document.getElementById(id);
     let valorAtual = 0;
-    const incremento = Math.ceil(valorFinal / 40);
+    const incremento = Math.ceil(valorFinal / 10);
 
     const contador = setInterval(() => {
         valorAtual += incremento;
@@ -317,7 +417,7 @@ function animarNumero(id, valorFinal) {
         } else {
             elemento.textContent = valorAtual;
         }
-    }, 30);
+    }, 50);
 }
 
 async function excluirItem(id) {
@@ -329,4 +429,18 @@ async function excluirItem(id) {
             console.error('Erro ao excluir:', error);
         }
     }
+}
+
+document.getElementById('pesquisa').addEventListener('input', function(e) {
+    const termo = e.target.value.toLowerCase();
+    filtrarItens(termo);
+});
+
+function filtrarItens(termo) {
+    const linhas = document.querySelectorAll('#corpoTabela tr');
+    
+    linhas.forEach(linha => {
+        const textoLinha = linha.textContent.toLowerCase();
+        linha.style.display = textoLinha.includes(termo) ? '' : 'none';
+    });
 }

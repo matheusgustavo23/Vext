@@ -9,15 +9,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    
     <button class="theme-toggle">
         <i class="bx bx-sun"></i>
     </button>
+
+        <a href="login.html" class="btn-login">
+        <i class='bx bx-log-in'></i> Login
+    </a>
 
     <div class="container">
         <h1 class="header">
             Sistema de Doações <span>ABEFRA</span>
         </h1>
 
+        <!-- dash -->
         <div class="main-dashboard">
             <div class="cards-grid">
                 <div class="dashboard-card destaque" id="cardTotal">
@@ -44,7 +50,7 @@
                     <span id="proximosVencer">0</span>
                 </div>
             </div>
-        
+            
             <div class="grafico-wrapper">
                 <div class="grafico-container">
                     <canvas id="graficoCategorias"></canvas>
@@ -52,13 +58,28 @@
             </div>
         </div>
 
+        <!-- form -->
         <div class="form-container">
             <form id="formDoacao">
                 <input type="text" id="nomeItem" placeholder="Nome do Item" required>
-                <input type="text" id="doador" placeholder="Nome do Doador">
+                <input type="text" id="doador" placeholder="Nome do Doador" required>
+                
+                <select id="tipoDocumento" required>
+                    <option value="" disabled selected>Tipo de Documento</option>
+                    <option value="CPF">CPF</option>
+                    <option value="CNPJ">CNPJ</option>
+                </select>
+
+                <input 
+                    type="text" 
+                    id="documento" 
+                    placeholder="Digite o CPF/CNPJ" 
+                    required
+                    pattern="(\d{3}\.\d{3}\.\d{3}-\d{2})|(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})"
+                >
+
                 <input type="number" id="quantidade" placeholder="Quantidade" required>
                 
-                <!-- Campos de data modificados -->
                 <input 
                     type="text" 
                     id="dataRecebimento" 
@@ -79,32 +100,37 @@
                     <option value="alimentos">Alimentos</option>
                     <option value="roupas">Roupas</option>
                     <option value="brinquedos">Brinquedos</option>
-                    <option value="Material Escolar">Material Escolar</option>
+                     <option value="material escolar">Material Escolar</option>
                     <option value="outros">Outros</option>
                 </select>
                 <button type="submit">Cadastrar Doação</button>
             </form>
         </div>
 
-        <div class="alert-box" id="alertBox">
-            <h3>🚨 Há Alertas de Validade Próxima</h3>
-            <div id="alertContent"></div>
-        </div>
-
+        <!-- Substituir o alert-box existente por: -->
+         <div class="alert-box" id="alertBox">
+    <h3><i class='bx bx-notification'></i> Alertas de Validade</h3>
+    <div id="alertContent"></div>
+</div>
+        <!-- tabela -->
         <div class="lista-itens">
             <h2 class="subtitulo">Itens Cadastrados</h2>
+                <div class="barra-pesquisa">
+        <input type="text" id="pesquisa" placeholder="Pesquisar itens..." class="campo-pesquisa">
+    </div>
             <table id="tabelaItens">
                 <thead>
                     <tr>
-                        <th>Ações</th>
+                        <th class="acoes">Ações</th>
                         <th>Item</th>
                         <th>Doador</th>
                         <th>Quantidade</th>
                         <th>Recebimento</th>
                         <th>Validade</th>
                         <th>Categoria</th>
+                        <th>Tipo Doc.</th>
+                        <th class="documento">Documento</th>
                         <th>Status</th>
-    
                     </tr>
                 </thead>
                 <tbody id="corpoTabela"></tbody>

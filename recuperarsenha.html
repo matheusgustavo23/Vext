@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar Senha - ABEFRA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Redefina sua senha <span>ABEFRA</span></h1>
+        <div class="login-error" id="resetError"></div>
+        
+        <!-- solicitar email -->
+        <form id="resetRequestForm" class="active-step">
+            <input type="email" id="resetEmail" placeholder="Digite seu e-mail" required>
+            <button type="submit">Enviar Link</button>
+        </form>
+
+        <!-- nova senha -->
+        <form id="resetPasswordForm" style="display: none;">
+            <input type="password" id="newPassword" placeholder="Nova senha (mínimo 8 caracteres)" required>
+            <input type="password" id="confirmNewPassword" placeholder="Confirmar nova senha" required>
+            <button type="submit">Redefinir Senha</button>
+        </form>
+
+        <div class="login-links">
+            <p>Lembrou da senha? <a href="login.html">Faça login</a></p>
+        </div>
+    </div>
+
+    <script src="scriptlogin.js"></script>
+</body>
+</html>
