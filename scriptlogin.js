@@ -1,20 +1,19 @@
-// Adicione no início do arquivo
 let token = localStorage.getItem('token');
 
-// Função para verificar autenticação
+// função para verificar autenticação
 function checkAuth() {
     if (!token) {
         window.location.href = '/login.html';
     }
 }
 
-// Função para fazer logout
+// função para fazer logout
 function logout() {
     localStorage.removeItem('token');
     window.location.href = '/login.html';
 }
 
-// Modifique todas as chamadas fetch para incluir o token
+// modifique todas as chamadas fetch para incluir o token (usei ia, dar uma olhada)
 async function carregarDados() {
     try {
         const response = await fetch('http://localhost:3001/doacoes', {
@@ -22,18 +21,17 @@ async function carregarDados() {
                 'Authorization': `Bearer ${token}`
             }
         });
-        // ... restante do código
     } catch (error) {
         if (error.status === 401) logout();
     }
 }
 
-// Adicione listeners para os botões sociais
+// adicione listeners para os botões sociais
 document.getElementById('googleLogin').addEventListener('click', () => {
     window.location.href = '/auth/google';
 });
 
-// Adicione o tratamento de login no formulário
+// tratamento do login no formulário
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -63,7 +61,7 @@ if (document.getElementById('registerForm')) {
         const password = document.getElementById('regSenha').value;
         const confirmPassword = document.getElementById('regConfirmarSenha').value;
 
-        // Validação frontend
+        // validação com o frontend
         if (password.length < 8) {
             showError('A senha deve ter pelo menos 8 caracteres');
             return;
@@ -92,7 +90,7 @@ if (document.getElementById('registerForm')) {
     });
 }
 
-// Função auxiliar para mostrar erros
+// função auxiliar para mostrar erros
 function showError(message) {
     const errorElement = document.getElementById('registerError') || document.getElementById('loginError');
     errorElement.textContent = message;

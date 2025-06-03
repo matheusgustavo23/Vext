@@ -95,7 +95,7 @@ document.getElementById('formDoacao').addEventListener('submit', async function(
     quantidade: parseInt(document.getElementById('quantidade').value),
     data_recebimento: dataRecebimentoISO,
     data_validade: categoria === 'alimentos' ? dataValidadeISO : null,
-    categoria: categoria.toLowerCase(), // Garante lowercase
+    categoria: categoria.toLowerCase(), // garante lowercase (IA)
     tipo_documento: document.getElementById('tipoDocumento').value,
     documento: document.getElementById('documento').value
 };
@@ -177,10 +177,10 @@ function atualizarDashboard(itens) {
     let proximosVencer = 0;
 
     itens.forEach(item => {
-        // Converte a categoria para lowercase para garantir consistência
+        // converte a categoria para lowercase para garantir consistência
         const categoria = item.categoria.toLowerCase();
         
-        // Verifica se a categoria existe no objeto, caso contrário conta como "outros"
+        // verifica se a categoria existe no objeto, caso contrário conta como "outros"
         if (categorias.hasOwnProperty(categoria)) {
             categorias[categoria]++;
         } else {
@@ -321,10 +321,10 @@ function verificarAlertas(itens) {
     const alertBox = document.getElementById('alertBox');
     const alertContent = document.getElementById('alertContent');
     
-    // Limpa alertas anteriores
+    // limpa alertas anteriores
     alertContent.innerHTML = '';
     
-    // Filtra e classifica os alertas
+    // filtra e classifica os alertas
     const alertas = itens
         .filter(item => item.categoria === 'alimentos' && item.data_validade)
         .map(item => ({
@@ -332,7 +332,7 @@ function verificarAlertas(itens) {
             dias: calcularDiasRestantes(item.data_validade)
         }))
         .filter(item => item.dias !== null && item.dias <= 7)
-        .sort((a, b) => a.dias - b.dias); // Ordena por dias restantes
+        .sort((a, b) => a.dias - b.dias); // ordena por dias restantes
     
     if (alertas.length > 0) {
         alertas.forEach(item => {
@@ -374,7 +374,7 @@ function atualizarEstiloAlerta() {
     const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
     
     alertBox.style.backgroundColor = isDarkMode 
-        ? 'rgba(46, 204, 113, 0.08)'  // Dark blue para tema escuro
+        ? 'rgba(46, 204, 113, 0.08)'  // tema escuro
         : 'rgba(46, 204, 113, 0.05)'; // tema claro
 }
 
@@ -384,20 +384,20 @@ function setupAlertHandlers() {
   
   if (!alertBox || !themeToggle) return;
 
-  // Atualiza o estilo do alerta conforme o tema
+  // atualiza o estilo do alerta conforme o tema
   const updateAlertStyle = () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     alertBox.style.backgroundColor = isDark 
       ? 'rgb(70, 70, 70)' 
-      : 'rgba(246, 249, 252, 0.98)';
+      : 'rgba(231, 248, 241, 0.16)';
   };
 
-  // Configura os listeners
+  // configura os listeners
   themeToggle.addEventListener('click', updateAlertStyle);
   document.addEventListener('DOMContentLoaded', updateAlertStyle);
 }
 
-// Chama a função quando o DOM estiver pronto
+// chama a função quando o dom estiver pronto
 if (document.readyState === 'complete') {
   setupAlertHandlers();
 } else {

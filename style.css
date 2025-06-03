@@ -322,13 +322,13 @@ td:nth-child(7) { /* categoria */
     padding-left: 1.5rem;
 }
 
-/* Remover nowrap */
+/* Remover nowrap (IA) */
 td {
     white-space: normal;
     max-width: none;
 }
 
-/* Larguras das colunas */
+/* Larguras das colunas (IA) */
 th:nth-child(1), td:nth-child(1) { width: 80px; }
 th:nth-child(2), td:nth-child(2) { width: 18%; }
 th:nth-child(3), td:nth-child(3) { width: 18%; }
@@ -370,13 +370,13 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
     transition: background 0.3s ease;
 }
 
-/* Alert Box - Versão Estilizada */
+/* alert box */
 .alert-box {
-    background: rgba(46, 204, 113, 0.08); /* Verde claro suave */
+    background: rgba(46, 204, 113, 0.08);
     padding: 1.5rem;
     border-radius: 12px;
     margin: 1.5rem 0;
-    border-left: 4px solid var(--main-color); /* Borda verde */
+    border-left: 4px solid var(--main-color);
     box-shadow: 0 2px 15px rgba(46, 204, 113, 0.1);
     display: none;
     opacity: 0;
@@ -391,7 +391,7 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
 }
 
 .alert-box h3 {
-    color: var(--main-color); /* Verde principal */
+    color: var(--main-color);
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -409,9 +409,9 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
     font-size: 0.95rem;
 }
 
-/* Status dos itens */
+/* status dos itens */
 .alert-item.vencido {
-    color: #e74c3c; /* Vermelho para itens vencidos */
+    color: #e74c3c;
     background: rgba(231, 76, 60, 0.05);
     border-radius: 6px;
     padding: 0.6rem;
@@ -419,25 +419,25 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
 }
 
 .alert-item.hoje {
-    color: #e67e22; /* Laranja para vence hoje */
+    color: #e67e22;
     font-weight: 500;
 }
 
 .alert-item.proximo {
-    color: var(--text-color); /* Cor normal do texto */
+    color: var(--text-color);
 }
 
-/* Ícones com cores temáticas */
+/* icon com cores diferentes */
 .bx-error { color: #e74c3c; }
 .bx-check-circle { color: #e67e22; }
 .bx-alarm { color: var(--main-color); }
 
-/* Efeito hover sutil */
+/* efeito no alerta */
 .alert-item:hover {
     background: rgba(46, 204, 113, 0.03);
 }
 
-/* Mobile */
+/* mobile */
 @media (max-width: 768px) {
     .alert-box {
         padding: 1.2rem;
@@ -504,7 +504,7 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
     }
 }
 
-/* ========== LOGIN PAGE ========== */
+/* pagina de login */
 .login-container {
     max-width: 400px;
     margin: 5rem auto;
@@ -583,7 +583,7 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
     color: #3b5998;
 }
 
-/* Responsivo */
+/* responsivo mobile */
 @media (max-width: 768px) {
     .login-container {
         margin: 2rem auto;
@@ -595,7 +595,7 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
     }
 }
 
-/* Mensagem de erro */
+/* erro no login */
 .login-error {
     color: #e74c3c;
     padding: 10px;
@@ -629,7 +629,7 @@ th:nth-child(10), td:nth-child(10) { width: 150px; }
     border-color: var(--main-color);
 }
 
-/* Divisor Social Login */
+/* divisor social do login */
 .social-divider {
     margin: 2rem 0;
     text-align: center;
