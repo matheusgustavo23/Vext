@@ -444,3 +444,163 @@ function filtrarItens(termo) {
         linha.style.display = textoLinha.includes(termo) ? '' : 'none';
     });
 }
+
+document.getElementById('btnGerarPDF').addEventListener('click', async () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    const margem = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    const formatarStatusComCor = (item) => {
+        if (item.categoria !== 'alimentos' || !item.data_validade)
+            return { texto: 'N/A', cor: [127, 140, 141] };
+
+        const dias = calcularDiasRestantes(item.data_validade);
+
+        if (dias < 0)
+            return { texto: `Vencido há ${Math.abs(dias)} dia${Math.abs(dias) !== 1 ? 's' : ''}`, cor: [231, 76, 60] };
+        if (dias === 0)
+            return { texto: 'Vence hoje!', cor: [243, 156, 18] };
+        if (dias <= 7)
+            return { texto: `Vence em ${dias} dia${dias !== 1 ? 's' : ''}`, cor: [241, 196, 15] };
+
+        return { texto: `${dias} dias restantes`, cor: [39, 174, 96] };
+    };
+
+    try {
+        const response = await fetch('http://localhost:3001/doacoes');
+        const dados = await response.json();
+
+        const dataHora = new Date();
+        const dataFormatada = dataHora.toLocaleDateString();
+        const horaFormatada = dataHora.toLocaleTimeString();
+
+        // Cabeçalho principal
+        doc.setFillColor(46, 204, 113);
+        doc.rect(0, 0, pageWidth, 35, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(255, 255, 255);
+        doc.text("Associação ABEFRA", pageWidth / 2, 15, { align: 'center' });
+
+        doc.setFontSize(11);
+        doc.text("Sistema de Gerenciamento de Doações", pageWidth / 2, 25, { align: 'center' });
+
+        doc.setFontSize(9);
+        doc.text(`Gerado em: ${dataFormatada} às ${horaFormatada}`, pageWidth - margem, 30, { align: 'right' });
+
+        // Sumário
+        doc.setTextColor(33, 33, 33);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Resumo Geral", margem, 45);
+
+        const totalItens = dados.length;
+        const alimentos = dados.filter(d => d.categoria.toLowerCase() === 'alimentos').length;
+        const vencidos = dados.filter(d => {
+            if (d.categoria.toLowerCase() !== 'alimentos' || !d.data_validade) return false;
+            return calcularDiasRestantes(d.data_validade) < 0;
+        }).length;
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`• Total de itens: ${totalItens}`, margem, 53);
+        doc.text(`• Alimentos: ${alimentos}`, margem, 59);
+        doc.text(`• Itens vencidos: ${vencidos}`, margem, 65);
+
+        const rows = dados.map((item, index) => {
+            const status = formatarStatusComCor(item);
+            return [
+                index + 1,
+                item.nome_item,
+                item.doador,
+                item.quantidade,
+                formatarData(item.data_recebimento),
+                item.data_validade ? formatarData(item.data_validade) : 'N/A',
+                item.categoria,
+                item.tipo_documento,
+                item.documento,
+                status.texto
+            ];
+        });
+
+        const tableConfig = {
+            startY: 75,
+            head: [[
+                "#", "Item", "Doador", "Qtd", "Recebimento", "Validade", "Categoria",
+                "Tipo Doc", "Documento", "Status"
+            ]],
+            body: rows,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [34, 153, 84],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 9,
+                halign: 'center',
+                valign: 'middle',
+                font: 'helvetica'
+            },
+            bodyStyles: {
+                fontSize: 9,
+                font: 'helvetica',
+                textColor: [33, 33, 33],
+                valign: 'middle',
+                cellPadding: 3
+            },
+            alternateRowStyles: { fillColor: [248, 248, 248] },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 10 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 40 },
+                3: { halign: 'center', cellWidth: 15 },
+                4: { halign: 'center', cellWidth: 25 },
+                5: { halign: 'center', cellWidth: 25 },
+                6: { cellWidth: 30 },
+                7: { halign: 'center', cellWidth: 20 },
+                8: { cellWidth: 35 },
+                9: { cellWidth: 40 }
+            },
+            didDrawCell: function(data) {
+                if (data.column.index === 9) {
+                    const item = dados[data.row.index];
+                    const status = formatarStatusComCor(item);
+                    const [r, g, b] = status.cor;
+
+                    doc.setFillColor(r, g, b);
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(8);
+                    doc.text(data.cell.raw, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 2, {
+                        align: 'center',
+                        baseline: 'middle'
+                    });
+                }
+            },
+            didDrawPage: function () {
+                const pageCount = doc.internal.getNumberOfPages();
+                const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+
+                doc.setDrawColor(200);
+                doc.setLineWidth(0.5);
+                doc.line(margem, pageHeight - 15, pageWidth - margem, pageHeight - 15);
+
+                doc.setFontSize(8);
+                doc.setTextColor(120);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Página ${currentPage} de ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+                doc.text("Associação Beneficente ABEFRA - Sistema de Doações", pageWidth / 2, pageHeight - 5, { align: 'center' });
+            }
+        };
+
+        doc.autoTable(tableConfig);
+
+        doc.save(`relatorio_doacoes_${dataFormatada.replace(/\//g, '-')}.pdf`);
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        alert('Erro ao gerar o PDF. Veja o console.');
+    }
+});

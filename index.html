@@ -14,16 +14,11 @@
         <i class="bx bx-sun"></i>
     </button>
 
-        <a href="login.html" class="btn-login">
-        <i class='bx bx-log-in'></i> Login
-    </a>
-
     <div class="container">
         <h1 class="header">
             Sistema de Doações <span>ABEFRA</span>
         </h1>
 
-        <!-- dash -->
         <div class="main-dashboard">
             <div class="cards-grid">
                 <div class="dashboard-card destaque" id="cardTotal">
@@ -58,7 +53,6 @@
             </div>
         </div>
 
-        <!-- form -->
         <div class="form-container">
             <form id="formDoacao">
                 <input type="text" id="nomeItem" placeholder="Nome do Item" required>
@@ -107,12 +101,11 @@
             </form>
         </div>
 
-        <!-- alertbox -->
          <div class="alert-box" id="alertBox">
     <h3><i class='bx bx-notification'></i> Alertas de Validade</h3>
     <div id="alertContent"></div>
 </div>
-        <!-- tabela -->
+
         <div class="lista-itens">
             <h2 class="subtitulo">Itens Cadastrados</h2>
                 <div class="barra-pesquisa">
@@ -135,9 +128,15 @@
                 </thead>
                 <tbody id="corpoTabela"></tbody>
             </table>
+
+            <button id="btnGerarPDF">Gerar Relatório PDF</button>
+
         </div>
     </div>
 
     <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
 </body>
 </html>
